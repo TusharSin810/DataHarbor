@@ -1,8 +1,13 @@
 import express from "express";
+import workerRouter from "./routers/worker";
+import userRouter from "./routers/user";
 
 const app = express();
 const port = 3000;
 
-app.listen((port , () => {
+app.use("/v1/user", userRouter);
+app.use("/v1/worker", workerRouter);
+
+app.listen(() => {
     console.log(`Listening On Port : ${port}`)
-}));
+});
