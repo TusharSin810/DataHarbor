@@ -8,6 +8,6 @@ const port = 3000;
 app.use("/v1/user", userRouter);
 app.use("/v1/worker", workerRouter);
 
-app.listen(() => {
+app.listen(port , () => {
     console.log(`Listening On Port : ${port}`)
 });
