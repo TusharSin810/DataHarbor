@@ -25,7 +25,8 @@ model Task {
   options     Options[]
   user_id     Int
   signature   String
-  amount      String
+  amount      Int
+  done        Boolean      @default(false)
   user        User         @relation(fields: [user_id], references: [id])
   submissions Submission[]
 }
@@ -42,7 +43,7 @@ model Worker {
   id             Int          @id @default(autoincrement())
   address        String       @unique
   submissions    Submission[]
-  pending_amount Int
+  pending_amount Int // Amount Stored in Lamports (10^9)
   locked_amount  Int
 }
 
@@ -54,5 +55,7 @@ model Submission {
   options   Options @relation(fields: [option_id], references: [id])
   task_id   Int
   task      Task    @relation(fields: [task_id], references: [id])
-  amount    String
+  amount    Int
+
+  @@unique([worker_id, task_id])
 }

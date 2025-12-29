@@ -7,6 +7,8 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import "dotenv/config";
 import { createTaskInput } from "../types";
 
+const TOTAL_DECIMALS = 1000_000_000;
+
 const userRouter = Router();
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET!;
 const accessKey = String(process.env.ACCESS_KEY);
@@ -92,7 +94,7 @@ userRouter.post("/task", userAuthMiddleware , async (req, res) => {
        const task = await tx.task.create({
             data:{
                 title: parseData.data.title,
-                amount: "1",
+                amount: 1 * TOTAL_DECIMALS,
                 signature: parseData.data.signature,
                 user_id: userId
             }

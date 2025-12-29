@@ -5,7 +5,7 @@ import "dotenv/config";
 export function userAuthMiddleware(req: Request,res: Response,next: NextFunction) {
   
   const authHeader = req.headers.authorization;
-  const secret = process.env.JWT_SCERET;
+  const secret = process.env.USER_JWT_SECRET;
 
   if (!authHeader || !secret) {
     return res.status(403).json({ message: "Missing token" });
@@ -30,10 +30,10 @@ export function userAuthMiddleware(req: Request,res: Response,next: NextFunction
   }
 }
 
-export function authMiddleware(req: Request,res: Response,next: NextFunction) {
+export function workerAuthMiddleware(req: Request,res: Response,next: NextFunction) {
   
   const authHeader = req.headers.authorization;
-  const secret = process.env.JWT_SCERET;
+  const secret = process.env.WORKER_JWT_SECRET;
 
   if (!authHeader || !secret) {
     return res.status(403).json({ message: "Missing token" });
