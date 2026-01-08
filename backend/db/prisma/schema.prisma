@@ -45,6 +45,7 @@ model Worker {
   submissions    Submission[]
   pending_amount Int // Amount Stored in Lamports (10^9)
   locked_amount  Int
+  payouts        Payouts[]
 }
 
 model Submission {
@@ -58,4 +59,19 @@ model Submission {
   amount    Int
 
   @@unique([worker_id, task_id])
+}
+
+model Payouts {
+  id        Int       @id @default(autoincrement())
+  worker_id Int
+  worker    Worker    @relation(fields: [worker_id], references: [id])
+  amount    Int
+  signature String
+  status    TxnStatus
+}
+
+enum TxnStatus {
+  Processing
+  Success
+  Failure
 }

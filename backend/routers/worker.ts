@@ -5,12 +5,67 @@ import "dotenv";
 import { workerAuthMiddleware } from "../middlewares/authmiddleware";
 import { getNextTask } from "../nextTask";
 import { createSubmissionInput } from "../types";
+import { worker } from "node:cluster";
 
 const workerRouter = Router();
 
 const TOTAL_SUBMISSIONS = 100;
 
 const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!;
+
+
+workerRouter.post("/payout", workerAuthMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userId: string = req.userId;
+    const worker = await prismaClient.worker.findFirst({
+        where:{
+            id: Number(userId)
+        }
+    })
+    if(!worker){
+        return res.status(403).json({
+            message: "User Not Found"
+        })
+    }
+    const address = worker.address;
+    const txnId = "0x123123123";
+
+    // Add A Lock Here
+
+    await prismaClient.$transaction(async tx => {
+        await tx.worker.update({
+            where: {
+                id: Number(userId)
+            },
+            data: {
+                pending_amount: {
+                    decrement: worker.pending_amount
+                },
+                locked_amount: {
+                    increment: worker.pending_amount
+                }
+            }
+        })
+
+        await tx.payouts.create({
+            data: {
+                worker_id: Number(userId),
+                amount: worker.pending_amount,
+                status: "Processing",
+                signature: txnId
+            }
+        })
+
+    })
+
+    // Send Transaction To The BlockChain
+
+    res.json({
+        message: "Processing Payout",
+        amount: worker.pending_amount
+    })
+
+})
 
 workerRouter.get("/balance", workerAuthMiddleware, async (req, res) => {
     //@ts-ignore
