@@ -5,7 +5,6 @@ import "dotenv";
 import { workerAuthMiddleware } from "../middlewares/authmiddleware";
 import { getNextTask } from "../nextTask";
 import { createSubmissionInput } from "../types";
-import { worker } from "node:cluster";
 
 const workerRouter = Router();
 
