@@ -9,9 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "axios": "^1.13.2",
     "next": "16.0.10",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "worker-frontend": "."
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

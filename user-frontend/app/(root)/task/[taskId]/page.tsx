@@ -2,7 +2,6 @@
 import { Appbar } from '@/components/Appbar';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import "dotenv";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
