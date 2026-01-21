@@ -31,16 +31,28 @@ export const NextTask = () => {
                 setCurrentTask(res.data.task);
                 setLoading(false)
             })
+            .catch(e => {
+                setLoading(false);
+                setCurrentTask(null);
+            })
     },[])
 
     if(loading){
-        return <div> Loading... </div>
+        return <div className="h-screen flex justify-center flex-col">
+                <div className="w-full flex justify-center">
+                    Loading...
+                </div>
+            </div>
     }
 
     if(!currentTask){
-        return <div>
-            Please Check Back In Some Time , No Pending Task For You ;)
-        </div>
+        return(
+            <div className="h-screen flex justify-center flex-col">
+                <div className="w-full flex justify-center">
+                    Please Check Back In Some Time , No Pending Task For You ;)
+                </div>
+            </div>
+        )
     }
 
     return(
@@ -51,8 +63,8 @@ export const NextTask = () => {
             <div className="flex justify-center pt-8">
                 {currentTask.options.map(option => <Option onSelect={async () => {
                     const response = await axios.post(`${BACKEND_URL}/v1/worker/submission`, {
-                        taskId: currentTask.id,
-                        selection: option.id
+                        taskId: currentTask.id.toString(),
+                        selection: option.id.toString()
                     },{
                         headers: {
                             "Authorization": localStorage.getItem("token")

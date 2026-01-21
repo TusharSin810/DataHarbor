@@ -128,6 +128,10 @@ workerRouter.post("/submission", workerAuthMiddleware, async (req, res) => {
             amount
         })
 
+    }else{
+        res.status(411).json({
+            message: "Incorrect Inputs"
+        })
     }
 
 })
