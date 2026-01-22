@@ -14,21 +14,21 @@ export const Appbar = () => {
         if(!publicKey){
             return;
         }
-        const message = new TextEncoder().encode("Sign Into Mechanical Turks");
+        const {nonce} = await axios.get(`${BACKEND_URL}/v1/user/auth/nonce`).then(r => r.data);
+        const message = new TextEncoder().encode(nonce);
         const signature = await signMessage?.(message);
-        console.log(signature)
-        console.log(publicKey)
         const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
             signature,
-            publicKey: publicKey?.toString()
+            publicKey: publicKey?.toString(),
+            nonce
         });
         localStorage.setItem("token", response.data.token);
         
-        useEffect(() => {
-            signAndSend()
-        }, [publicKey]);
-    
     }
+    useEffect(() => {
+        signAndSend()
+        }, [publicKey]
+    );
 
     return (
         <div className="flex justify-between border-b pb-2 pt-2">

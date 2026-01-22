@@ -5,6 +5,8 @@ import "dotenv";
 import { workerAuthMiddleware } from "../middlewares/authmiddleware";
 import { getNextTask } from "../nextTask";
 import { createSubmissionInput } from "../types";
+import nacl from "tweetnacl";
+import { PublicKey } from "@solana/web3.js";
 
 const workerRouter = Router();
 
@@ -152,15 +154,23 @@ workerRouter.get("/nextTask", workerAuthMiddleware, async (req, res) => {
 })
 
 workerRouter.post("/signin", async (req, res) => {
+    
+    const {publicKey, signature, nonce} = req.body;
 
-    const walletAddress = "8nnue5nCErEsWfx9SRv3LQzcQc2pnRhb4VRp3iXLhx6p"
+    const message = new TextEncoder().encode(nonce);
+    const result = nacl.sign.detached.verify(
+        message,
+        new Uint8Array(signature.data),
+        new PublicKey(publicKey).toBytes(),
+    )
+    
     const user = await prismaClient.worker.upsert({
         where:{
-            address: walletAddress
+            address: publicKey
         },
         update: {},
         create: {
-            address: walletAddress,
+            address: publicKey,
             pending_amount: 0,
             locked_amount: 0
         },

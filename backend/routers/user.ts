@@ -6,9 +6,10 @@ import { userAuthMiddleware } from "../middlewares/authmiddleware";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import "dotenv/config";
 import { createTaskInput } from "../types";
+import nacl from "tweetnacl"
+import { PublicKey } from "@solana/web3.js";
 
 const TOTAL_DECIMALS = 1000_000_000;
-
 const userRouter = Router();
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET!;
 const accessKey = String(process.env.ACCESS_KEY);
@@ -141,15 +142,22 @@ userRouter.get("/presignedUrl", userAuthMiddleware , async (req, res) =>{
 })
 
 userRouter.post("/signin", async (req, res) => {
-    const walletAddress = "CDT8eif36PY45By4PgMiR5SY4y7Z3neXzrE1FSkCcZsE"
+
+    const {publicKey, signature, nonce} = req.body;
+    const message = new TextEncoder().encode(nonce);
+    const result = nacl.sign.detached.verify(
+        message,
+        new Uint8Array(signature.data),
+        new PublicKey(publicKey).toBytes(),
+    )
 
     const user = await prismaClient.user.upsert({
         where:{
-            address: walletAddress
+            address: publicKey
         },
         update: {},
         create: {
-            address: walletAddress,
+            address: publicKey,
         },
     });
 
@@ -158,5 +166,10 @@ userRouter.post("/signin", async (req, res) => {
     res.json({token});
 
 });
+
+userRouter.get("/auth/nonce", (req, res) => {
+    const nonce = crypto.randomUUID();
+    res.json({nonce});
+})
 
 export default userRouter;

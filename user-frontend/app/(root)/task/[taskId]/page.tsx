@@ -28,11 +28,19 @@ export default function Page({params: {
     }>({});
 
     useEffect(() => {
-        getTaskDetails(taskId)
-            .then((data) => {
-                setResult(data.result)
-                setTaskDetails(data.taskDetails)
-            })
+
+        let timeout: NodeJS.Timeout;
+
+        const fetchData = async () => {
+            const data = await getTaskDetails(taskId);
+            setResult(data.result);
+            setTaskDetails(data.taskDetails);
+        
+            timeout = setTimeout(fetchData, 1000);
+        }
+        return() => {
+            clearTimeout(timeout);
+        };
     }, [taskId]);
 
     return <div>

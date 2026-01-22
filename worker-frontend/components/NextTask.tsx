@@ -19,7 +19,8 @@ export const NextTask = () => {
     
     const [currentTask, setCurrentTask] = useState<Task | null>(null);
     const [loading , setLoading] = useState(true);
-    
+    const [submitting, setSubmitting] = useState(false);
+
     useEffect(() => {
         setLoading(true);
         axios.get(`${BACKEND_URL}/v1/worker/nextTask`, {
@@ -58,25 +59,32 @@ export const NextTask = () => {
     return(
         <div>
             <div className="text-2xl pt-20 flex justify-center">
-                {currentTask.title}
+                {currentTask.title} {currentTask.id}
+                {submitting && "Submitting..."}
             </div>
             <div className="flex justify-center pt-8">
                 {currentTask.options.map(option => <Option onSelect={async () => {
-                    const response = await axios.post(`${BACKEND_URL}/v1/worker/submission`, {
+                    setSubmitting(true);
+                    try{
+                        const response = await axios.post(`${BACKEND_URL}/v1/worker/submission`, {
                         taskId: currentTask.id.toString(),
                         selection: option.id.toString()
-                    },{
-                        headers: {
+                        },{
+                            headers: {
                             "Authorization": localStorage.getItem("token")
-                        }
-                    });
-                    const nextTask = response.data.nextTask;
+                            }
+                        });
+                        const nextTask = response.data.nextTask;
 
-                    if(nextTask){
-                        setCurrentTask(nextTask);
-                    }else{
-                        setCurrentTask(null);
+                        if(nextTask){
+                            setCurrentTask(nextTask);
+                        }else{
+                            setCurrentTask(null);
+                        }
+                    }catch(e){
+                        console.log(e);
                     }
+                    setSubmitting(false);
  
                 }} key={option.id} imageUrl={option.image_url}/>)}
             </div> 
