@@ -7,11 +7,13 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import "dotenv/config";
 import { createTaskInput } from "../types";
 import nacl from "tweetnacl"
-import { PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 const TOTAL_DECIMALS = 1000_000_000;
 const userRouter = Router();
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET!;
+const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS;
+const connection = new Connection("https://solana-devnet.g.alchemy.com/v2/ch2xeAWYr9E6ShlCU3e2VI7wvh5dXXhj");
 const accessKey = String(process.env.ACCESS_KEY);
 const secretKey = String(process.env.SECRET_KEY);
 const s3Client = new S3Client({
@@ -85,10 +87,44 @@ userRouter.post("/task", userAuthMiddleware , async (req, res) => {
     const body = req.body;
     const parseData = createTaskInput.safeParse(body);
 
+    const user = await prismaClient.user.findFirst({
+        where:{
+            id: userId
+        }
+    })
+
     if(!parseData.success){
        return res.status(400).json({
             message: "Invalid Inputs"
         })
+    }
+
+    const transaction = await connection.getTransaction(parseData.data.signature, {
+        maxSupportedTransactionVersion: 1
+    });
+
+    if((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== 100_000_000){
+        return(
+            res.status(411).json({
+                message: "Transaction Signature/Amount Incorrect"
+            })
+        )
+    }
+
+    if((transaction?.transaction?.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS)){
+        return(
+            res.status(411).json({
+                message: "Transaction Sent Is Wrong"
+            })
+        )
+    }
+
+    if((transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== user?.address)){
+        return(
+            res.status(411).json({
+                message: "Trsansaction Send From Wrong Address"
+            })
+        )
     }
 
     let response = await prismaClient.$transaction(async tx => {

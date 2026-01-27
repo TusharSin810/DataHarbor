@@ -36,7 +36,7 @@ export const Upload = () => {
         const transaction = new Transaction().add(
             SystemProgram.transfer({
                 fromPubkey: publicKey!,
-                toPubkey: new PublicKey(""),
+                toPubkey: new PublicKey("CDT8eif36PY45By4PgMiR5SY4y7Z3neXzrE1FSkCcZsE"),
                 lamports: 100_000_000
             })
         );

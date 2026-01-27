@@ -11,7 +11,7 @@ export function userAuthMiddleware(req: Request,res: Response,next: NextFunction
     return res.status(403).json({ message: "Missing token" });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(" ")[0];
 
   if (!token) {
     return res.status(403).json({ message: "Invalid token format" });
@@ -39,7 +39,7 @@ export function workerAuthMiddleware(req: Request,res: Response,next: NextFuncti
     return res.status(403).json({ message: "Missing token" });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(" ")[0];
 
   if (!token) {
     return res.status(403).json({ message: "Invalid token format" });

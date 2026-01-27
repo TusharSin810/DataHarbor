@@ -178,8 +178,16 @@ workerRouter.post("/signin", async (req, res) => {
 
     const token = jwt.sign({userId: user.id}, WORKER_JWT_SECRET);
 
-    res.json({token});
+    res.json({
+        token,
+        amount: user.pending_amount,
+    });
 
+})
+
+workerRouter.get("/auth/nonce", (req, res) => {
+    const nonce = crypto.randomUUID();
+    res.json({nonce});
 })
 
 export default workerRouter;
