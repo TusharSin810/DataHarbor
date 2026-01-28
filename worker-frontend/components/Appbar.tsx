@@ -4,7 +4,7 @@ import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapte
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { headers } from "next/headers"
+
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -41,7 +41,7 @@ export const Appbar = () => {
             </div>
             <div className="text-xl pr-4 pb-2 flex">
                 <button onClick={() => {
-                    axios.post(`${BACKEND_URL}/v1/worker/payout`,{
+                    axios.post(`${BACKEND_URL}/v1/worker/payout`,{},{
                         headers: {
                             "Authorization": localStorage.getItem("token")
                         }

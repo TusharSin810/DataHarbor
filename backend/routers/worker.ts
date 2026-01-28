@@ -7,6 +7,7 @@ import { getNextTask } from "../nextTask";
 import { createSubmissionInput } from "../types";
 import nacl from "tweetnacl";
 import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import bs58 from "bs58";
 
 const workerRouter = Router();
 const connection = new Connection("https://solana-devnet.g.alchemy.com/v2/ch2xeAWYr9E6ShlCU3e2VI7wvh5dXXhj");
@@ -40,15 +41,31 @@ workerRouter.post("/payout", workerAuthMiddleware, async (req, res) => {
             lamports: worker.pending_amount
         })
     );
-
-    const txnId = transaction.signature;
-    const keypair = Keypair.fromSecretKey(decode(PRIVATE_KEY))
+    transaction.feePayer = new PublicKey("CDT8eif36PY45By4PgMiR5SY4y7Z3neXzrE1FSkCcZsE");
+    transaction.recentBlockhash = (
+        await connection.getLatestBlockhash()
+    ).blockhash;
     
-    const signature = await sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [keypair]
-    );
+    console.log(transaction);
+
+    const keypair = Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY))
+    
+      let signature: string;
+
+      try {
+        signature = await sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [keypair],
+        );
+    
+     } catch(e) {
+        return res.json({
+            message: "Transaction failed"
+        })
+     }
+    
+    console.log(signature)
 
     // Add A Lock Here
 
@@ -72,7 +89,7 @@ workerRouter.post("/payout", workerAuthMiddleware, async (req, res) => {
                 worker_id: Number(userId),
                 amount: worker.pending_amount,
                 status: "Processing",
-                signature: txnId
+                signature: signature
             }
         })
 
