@@ -6,14 +6,16 @@ import { workerAuthMiddleware } from "../middlewares/authmiddleware";
 import { getNextTask } from "../nextTask";
 import { createSubmissionInput } from "../types";
 import nacl from "tweetnacl";
-import { PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 
 const workerRouter = Router();
+const connection = new Connection("https://solana-devnet.g.alchemy.com/v2/ch2xeAWYr9E6ShlCU3e2VI7wvh5dXXhj");
 
 const TOTAL_SUBMISSIONS = 100;
 
 const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!;
 
+const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 
 workerRouter.post("/payout", workerAuthMiddleware, async (req, res) => {
     //@ts-ignore
@@ -28,8 +30,25 @@ workerRouter.post("/payout", workerAuthMiddleware, async (req, res) => {
             message: "User Not Found"
         })
     }
-    const address = worker.address;
-    const txnId = "0x123123123";
+    const addressW = worker.address;
+    console.log(worker.pending_amount);
+
+    const transaction = new Transaction().add(
+        SystemProgram.transfer({
+            fromPubkey: new PublicKey("CDT8eif36PY45By4PgMiR5SY4y7Z3neXzrE1FSkCcZsE"),
+            toPubkey: new PublicKey(addressW),
+            lamports: worker.pending_amount
+        })
+    );
+
+    const txnId = transaction.signature;
+    const keypair = Keypair.fromSecretKey(decode(PRIVATE_KEY))
+    
+    const signature = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [keypair]
+    );
 
     // Add A Lock Here
 

@@ -76,7 +76,8 @@ userRouter.get("/task", userAuthMiddleware, async (req, res) => {
     });
     
     res.json({
-        result
+        result,
+        taskDetails
     })
 
 })
@@ -131,7 +132,7 @@ userRouter.post("/task", userAuthMiddleware , async (req, res) => {
        const task = await tx.task.create({
             data:{
                 title: parseData.data.title,
-                amount: 1 * TOTAL_DECIMALS,
+                amount: 0.1 * TOTAL_DECIMALS,
                 signature: parseData.data.signature,
                 user_id: userId
             }
@@ -198,7 +199,6 @@ userRouter.post("/signin", async (req, res) => {
     });
 
     const token = jwt.sign({userId: user.id}, USER_JWT_SECRET);
-
     res.json({token});
 
 });

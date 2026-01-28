@@ -1,7 +1,7 @@
-"use client"
+'use client'
 import { Appbar } from '@/components/Appbar';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -14,9 +14,12 @@ async function getTaskDetails(taskId: string) {
     return response.data
 }
 
-export default function Page({params: { 
-    taskId 
-}}: {params: { taskId: string }}) {
+export default function Page({
+    params,
+}:{
+    params: Promise<{taskId: string}>;
+}) {
+    const {taskId} = use(params);
     const [result, setResult] = useState<Record<string, {
         count: number;
         option: {
@@ -24,32 +27,30 @@ export default function Page({params: {
         }
     }>>({});
     const [taskDetails, setTaskDetails] = useState<{
-        title?: string
-    }>({});
+        title: string
+    } | null>(null);
 
     useEffect(() => {
+    const fetchData = async () => {
+        const data = await getTaskDetails(taskId);
+        setResult(data.result);
+        setTaskDetails(data.taskDetails);
+    };
 
-        let timeout: NodeJS.Timeout;
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
 
-        const fetchData = async () => {
-            const data = await getTaskDetails(taskId);
-            setResult(data.result);
-            setTaskDetails(data.taskDetails);
-        
-            timeout = setTimeout(fetchData, 1000);
-        }
-        return() => {
-            clearTimeout(timeout);
-        };
+    return () => clearInterval(interval);
     }, [taskId]);
+
 
     return <div>
         <Appbar />
         <div className='text-2xl pt-20 flex justify-center'>
-            {taskDetails.title}
+            {taskDetails ? taskDetails.title : "Loading..."}
         </div>
         <div className='flex justify-center pt-8'>
-            {Object.keys(result || {}).map(taskId => <Task imageUrl={result[taskId].option.imageUrl} votes={result[taskId].count} />)}
+            {Object.keys(result || {}).map(taskId => <Task key={result[taskId].option.imageUrl} imageUrl={result[taskId].option.imageUrl} votes={result[taskId].count} />)}
         </div>
     </div>
 }

@@ -21,7 +21,7 @@ export function UploadImage({onImageAdded, image}: {
             const file = e.target.files[0];
             const response = await axios.get(`${BACKEND_URL}/v1/user/presignedUrl`, {
                 headers:{
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                    "Authorization" : localStorage.getItem("token")
                 }
             });
             console.log(response)

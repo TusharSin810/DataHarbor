@@ -4,6 +4,7 @@ import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapte
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { headers } from "next/headers"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -24,7 +25,7 @@ export const Appbar = () => {
             nonce
         });
 
-        setBalance(response.data.amount);
+        setBalance(response.data.amount/1000_000_000);
         localStorage.setItem("token", response.data.token);
         
     }
@@ -39,7 +40,13 @@ export const Appbar = () => {
                 DataHarbor (WORKER)
             </div>
             <div className="text-xl pr-4 pb-2 flex">
-                <button className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2 me-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Pay Out: ({balance})</button>
+                <button onClick={() => {
+                    axios.post(`${BACKEND_URL}/v1/worker/payout`,{
+                        headers: {
+                            "Authorization": localStorage.getItem("token")
+                        }
+                    })
+                }} className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2 me-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Pay Out: ({balance}) SOL</button>
                 {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton />}
             </div>
         </div>
