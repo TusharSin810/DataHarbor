@@ -4,7 +4,7 @@ import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapte
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useEffect, useState } from "react"
 import axios from "axios"
-
+import bs58 from "bs58"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -12,15 +12,16 @@ export const Appbar = () => {
     
     const {publicKey, signMessage} = useWallet();
     const [balance, setBalance] = useState(0);
+    const [mounted, setMounted] = useState(false);
     async function signAndSend(){
         if(!publicKey){
             return;
         }
         const {nonce} = await axios.get(`${BACKEND_URL}/v1/worker/auth/nonce`).then(r => r.data);
         const message = new TextEncoder().encode(nonce);
-        const signature = await signMessage?.(message);
+        const signature = await signMessage!(message);
         const response = await axios.post(`${BACKEND_URL}/v1/worker/signin`, {
-            signature,
+            signature: bs58.encode(signature),
             publicKey: publicKey?.toString(),
             nonce
         });
@@ -30,7 +31,8 @@ export const Appbar = () => {
         
     }
     useEffect(() => {
-            signAndSend()
+            signAndSend(),
+            setMounted(true);
     }, [publicKey]);
     
 
@@ -47,7 +49,7 @@ export const Appbar = () => {
                         }
                     })
                 }} className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2 me-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Pay Out: ({balance}) SOL</button>
-                {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton />}
+                {mounted && (publicKey ? (<WalletDisconnectButton /> ): (<WalletMultiButton />))}
             </div>
         </div>
     )

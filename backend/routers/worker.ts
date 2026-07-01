@@ -190,16 +190,15 @@ workerRouter.get("/nextTask", workerAuthMiddleware, async (req, res) => {
 })
 
 workerRouter.post("/signin", async (req, res) => {
-    
+
     const {publicKey, signature, nonce} = req.body;
 
     const message = new TextEncoder().encode(nonce);
     const result = nacl.sign.detached.verify(
         message,
-        new Uint8Array(signature.data),
+        bs58.decode(signature),
         new PublicKey(publicKey).toBytes(),
     )
-    
     const user = await prismaClient.worker.upsert({
         where:{
             address: publicKey

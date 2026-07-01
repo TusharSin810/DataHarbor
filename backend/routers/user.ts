@@ -8,6 +8,7 @@ import "dotenv/config";
 import { createTaskInput } from "../types";
 import nacl from "tweetnacl"
 import { Connection, PublicKey } from "@solana/web3.js";
+import bs58 from "bs58"
 
 const TOTAL_DECIMALS = 1000_000_000;
 const userRouter = Router();
@@ -179,15 +180,13 @@ userRouter.get("/presignedUrl", userAuthMiddleware , async (req, res) =>{
 })
 
 userRouter.post("/signin", async (req, res) => {
-
     const {publicKey, signature, nonce} = req.body;
     const message = new TextEncoder().encode(nonce);
     const result = nacl.sign.detached.verify(
         message,
-        new Uint8Array(signature.data),
+        bs58.decode(signature),
         new PublicKey(publicKey).toBytes(),
     )
-
     const user = await prismaClient.user.upsert({
         where:{
             address: publicKey

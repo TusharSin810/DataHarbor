@@ -1,24 +1,25 @@
 "use client"
 import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
+import bs58 from "bs58"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const Appbar = () => {
     
     const {publicKey, signMessage} = useWallet();
-    
+    const [mounted , setMounted] = useState(false);
     async function signAndSend(){
         if(!publicKey){
             return;
         }
         const {nonce} = await axios.get(`${BACKEND_URL}/v1/user/auth/nonce`).then(r => r.data);
         const message = new TextEncoder().encode(nonce);
-        const signature = await signMessage?.(message);
+        const signature = await signMessage!(message);
         const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
-            signature,
+            signature: bs58.encode(signature),
             publicKey: publicKey?.toString(),
             nonce
         });
@@ -27,6 +28,7 @@ export const Appbar = () => {
     }
     useEffect(() => {
         signAndSend()
+        setMounted(true);
         }, [publicKey]
     );
 
@@ -36,7 +38,7 @@ export const Appbar = () => {
                 DataHarbor
             </div>
             <div className="text-xl pr-4 pb-2">
-                {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton />}
+                {mounted && (publicKey ? (<WalletDisconnectButton />) : (<WalletMultiButton />))}
             </div>
         </div>
     )
